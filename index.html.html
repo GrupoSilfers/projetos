@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>SILFER'S - Sistema Gerador</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F9F9F9;
+      margin: 0;
+      padding: 0;
+      color: #1A1A1A;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: #D5001C;
+      padding: 30px 20px;
+      text-align: center;
+      color: white;
+      width: 100%;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .subtitulo {
+      margin-top: 6px;
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .card {
+      background: #fff;
+      padding: 30px;
+      margin-top: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+    }
+
+    label {
+      font-weight: 500;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    input[type="file"] {
+      padding: 12px;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    #fileName {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 28px;
+      background-color: #D5001C;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #B80017;
+    }
+
+    footer {
+      margin-top: 60px;
+      padding-bottom: 20px;
+      text-align: center;
+      color: #999;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 20px;
+      }
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+      <circle cx="50" cy="50" r="45" stroke="#ffffff" stroke-width="5" fill="none"/>
+      <rect x="32" y="50" width="8" height="20" fill="#ffffff" />
+      <rect x="46" y="40" width="8" height="30" fill="#ffffff" />
+      <rect x="60" y="30" width="8" height="40" fill="#ffffff" />
+    </svg>
+    <h1>SILFER'S - Sistema Gerador de Planilhas</h1>
+    <p class="subtitulo">Simplifique sua rotina com um clique.</p>
+  </header>
+
+  <section class="card">
+    <label for="fileInput">Selecione o arquivo XML da nota fiscal</label>
+    <input type="file" id="fileInput" accept=".xml" />
+    <span id="fileName">Nenhum arquivo selecionado</span>
+    <button onclick="exportToExcel()">Exportar para Excel</button>
+  </section>
+
+  <footer>
+    &copy; SILFER'S - sistema gerador de planilhas - 2025
+  </footer>
+</body>
+</html>
