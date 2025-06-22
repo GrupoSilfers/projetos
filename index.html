@@ -2,28 +2,33 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>SILFER'S - Sistema Gerador</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <title>SILFER’S · Sistema Gerador</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       font-family: 'Inter', sans-serif;
-      background: #F9F9F9;
+    }
+
+    body {
       margin: 0;
-      padding: 0;
-      color: #1A1A1A;
+      background-color: #f5f7fa;
+      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      padding: 0;
     }
 
     header {
-      background-color: #D5001C;
-      padding: 30px 20px;
       text-align: center;
+      background-color: #c62828;
       color: white;
+      padding: 20px 10px;
       width: 100%;
+      margin-bottom: 30px;
     }
 
     .logo {
@@ -34,53 +39,46 @@
 
     h1 {
       margin: 0;
-      font-size: 24px;
       font-weight: 600;
-    }
-
-    .subtitulo {
-      margin-top: 6px;
-      font-size: 1rem;
-      opacity: 0.9;
+      font-size: 24px;
     }
 
     .card {
-      background: #fff;
+      background: white;
       padding: 30px;
-      margin-top: 40px;
       border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-      max-width: 600px;
-      width: 90%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      width: 100%;
+      max-width: 700px;
       text-align: center;
     }
 
     label {
-      font-weight: 500;
       display: block;
       margin-bottom: 10px;
+      font-weight: 500;
     }
 
     input[type="file"] {
-      padding: 12px;
+      padding: 10px;
       border: 2px dashed #ccc;
       border-radius: 8px;
       background: #fff;
       cursor: pointer;
-      width: 100%;
     }
 
     #fileName {
+      display: block;
       margin-top: 10px;
+      color: #555;
       font-size: 0.9rem;
-      color: #666;
     }
 
     button {
       margin-top: 20px;
       padding: 12px 28px;
-      background-color: #D5001C;
-      color: #fff;
+      background-color: #c62828;
+      color: white;
       border: none;
       border-radius: 6px;
       font-weight: 600;
@@ -90,37 +88,27 @@
     }
 
     button:hover {
-      background-color: #B80017;
+      background-color: #a61e1e;
     }
 
     footer {
-      margin-top: 60px;
-      padding-bottom: 20px;
-      text-align: center;
-      color: #999;
+      margin-top: 40px;
       font-size: 0.85rem;
-    }
-
-    @media (max-width: 480px) {
-      .card {
-        padding: 20px;
-      }
-      button {
-        width: 100%;
-      }
+      color: #999;
+      text-align: center;
+      padding-bottom: 20px;
     }
   </style>
 </head>
 <body>
   <header>
     <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-      <circle cx="50" cy="50" r="45" stroke="#ffffff" stroke-width="5" fill="none"/>
-      <rect x="32" y="50" width="8" height="20" fill="#ffffff" />
-      <rect x="46" y="40" width="8" height="30" fill="#ffffff" />
-      <rect x="60" y="30" width="8" height="40" fill="#ffffff" />
+      <circle cx="50" cy="50" r="45" stroke="white" stroke-width="5" fill="none" />
+      <rect x="32" y="50" width="8" height="20" fill="white" />
+      <rect x="46" y="40" width="8" height="30" fill="white" />
+      <rect x="60" y="30" width="8" height="40" fill="white" />
     </svg>
-    <h1>SILFER'S - Sistema Gerador de Planilhas</h1>
-    <p class="subtitulo">Simplifique sua rotina com um clique.</p>
+    <h1>SILFER’S · Sistema Gerador de Planilhas</h1>
   </header>
 
   <section class="card">
@@ -131,7 +119,113 @@
   </section>
 
   <footer>
-    &copy; SILFER'S - sistema gerador de planilhas - 2025
+    © SILFER’S · sistema gerador de planilhas · 2025
   </footer>
+
+  <script>
+    document.getElementById("fileInput").addEventListener("change", function (event) {
+      document.getElementById("fileName").textContent = event.target.files[0].name;
+    });
+
+    function exportToExcel() {
+      const file = document.getElementById("fileInput").files[0];
+      if (!file) {
+        alert("Por favor, selecione um arquivo XML.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(event.target.result, "text/xml");
+        const items = xmlDoc.getElementsByTagName("det");
+
+        const headers = [
+          "Código", "Quantidade", "UND", "Descrição", "", "Novo PU",
+          "Preço Unitário", "Valor Total", "VST",
+          "Despesas Acessórias", "Novo VT"
+        ];
+
+        const data = [headers];
+        const cellStyles = {};
+        let totalValorTotal = 0, totalVST = 0, totalDespesas = 0, totalNovoVT = 0;
+
+        for (let i = 0; i < items.length; i++) {
+          totalDespesas += parseFloat(items[i].getElementsByTagName("vOutro")[0]?.textContent || 0);
+        }
+
+        const despesasPorItem = totalDespesas / items.length;
+
+        for (let i = 0; i < items.length; i++) {
+          const linha = i + 2;
+          const item = items[i];
+          const prod = item.getElementsByTagName("prod")[0];
+
+          const codigo = parseInt(prod.getElementsByTagName("cProd")[0].textContent);
+          const quantidade = parseFloat(prod.getElementsByTagName("qCom")[0].textContent);
+          const unidade = prod.getElementsByTagName("uCom")[0].textContent;
+          const descricao = prod.getElementsByTagName("xProd")[0].textContent;
+          const precoUnit = parseFloat(prod.getElementsByTagName("vUnCom")[0].textContent);
+          const valorTotal = parseFloat(prod.getElementsByTagName("vProd")[0].textContent);
+          const vst = parseFloat(item.getElementsByTagName("vICMSST")[0]?.textContent || 0);
+
+          const novoVT = parseFloat((valorTotal + vst + despesasPorItem).toFixed(2));
+          const novoPU = parseFloat((novoVT / quantidade).toFixed(2));
+
+          totalValorTotal += valorTotal;
+          totalVST += vst;
+          totalNovoVT += novoVT;
+
+          data.push([
+            codigo,
+            parseInt(quantidade),
+            unidade,
+            descricao,
+            "",
+            novoPU,
+            parseFloat(precoUnit.toFixed(2)),
+            parseFloat(valorTotal.toFixed(2)),
+            parseFloat(vst.toFixed(2)),
+            parseFloat(despesasPorItem.toFixed(2)),
+            novoVT
+          ]);
+
+          for (let col = 5; col <= 10; col++) {
+            const ref = XLSX.utils.encode_cell({ r: linha - 1, c: col });
+            cellStyles[ref] = { z: '#,##0.00' };
+          }
+        }
+
+        const sortedData = data.slice(1).sort((a, b) => a[3].localeCompare(b[3], 'pt-BR'));
+        const linhaTotal = sortedData.length + 2;
+
+        sortedData.push([
+          "Total", "", "", "", "", "", "", 
+          parseFloat(totalValorTotal.toFixed(2)), 
+          parseFloat(totalVST.toFixed(2)), 
+          parseFloat(totalDespesas.toFixed(2)), 
+          parseFloat(totalNovoVT.toFixed(2))
+        ]);
+
+        const finalData = [headers, ...sortedData];
+        const ws = XLSX.utils.aoa_to_sheet(finalData);
+
+        for (const cell in cellStyles) {
+          if (ws[cell]) ws[cell].z = cellStyles[cell].z;
+        }
+
+        for (let col = 7; col <= 10; col++) {
+          const ref = XLSX.utils.encode_cell({ r: linhaTotal - 1, c: col });
+          if (ws[ref]) ws[ref].z = '#,##0.00';
+        }
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Planilha");
+        XLSX.writeFile(wb, "Exportado_SILFERS.xlsx");
+      };
+
+      reader.readAsText(file);
+    }
+  </script>
 </body>
 </html>
