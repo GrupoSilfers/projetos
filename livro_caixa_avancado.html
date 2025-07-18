@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Livro Caixa - Silfer's</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 5px 10px;
+    }
+    #formulario {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Livro Caixa - Silfer's</h2>
+
+  <div id="formulario">
+    <input type="date" id="data">
+    <input type="text" id="codigo" placeholder="Código">
+    <input type="text" id="descricao" placeholder="Descrição">
+    <input type="number" id="credito" placeholder="Crédito">
+    <input type="number" id="debito" placeholder="Débito">
+    <button onclick="lancar()">Lançar</button>
+    <button onclick="salvar()">Salvar</button>
+  </div>
+
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Data</th>
+        <th>Código</th>
+        <th>Descrição</th>
+        <th>Crédito</th>
+        <th>Débito</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let contador = 1;
+
+    function lancar() {
+      const data = document.getElementById("data").value;
+      const codigo = document.getElementById("codigo").value;
+      const descricao = document.getElementById("descricao").value;
+      const credito = document.getElementById("credito").value;
+      const debito = document.getElementById("debito").value;
+
+      const tabela = document.querySelector("#tabela tbody");
+      const novaLinha = tabela.insertRow();
+
+      novaLinha.innerHTML = `
+        <td>${contador++}</td>
+        <td>${data}</td>
+        <td>${codigo}</td>
+        <td>${descricao}</td>
+        <td>${credito}</td>
+        <td>${debito}</td>
+        <td><button onclick="remover(this)">Remover</button></td>
+      `;
+
+      // Limpar campos
+      document.getElementById("data").value = "";
+      document.getElementById("codigo").value = "";
+      document.getElementById("descricao").value = "";
+      document.getElementById("credito").value = "";
+      document.getElementById("debito").value = "";
+    }
+
+    function remover(botao) {
+      const row = botao.parentNode.parentNode;
+      row.remove();
+    }
+
+    function salvar() {
+      const dados = [];
+      const linhas = document.querySelectorAll("#tabela tbody tr");
+
+      linhas.forEach(linha => {
+        const data = linha.cells[1].innerText;
+        const codigo = linha.cells[2].innerText;
+        const descricao = linha.cells[3].innerText;
+        const credito = linha.cells[4].innerText;
+        const debito = linha.cells[5].innerText;
+
+        dados.push({ data, codigo, descricao, credito, debito });
+      });
+
+      fetch("https://script.google.com/macros/s/AKfycbxoAzDg0ANwN03rifGC09OH0mUN_vcVYM0O2Whnhh1wpgjoQf6BQqwq-e4SfjT1oHRJ/exec", {
+        method: "POST",
+        body: JSON.stringify(dados),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(response => response.text())
+      .then(res => alert("Dados salvos com sucesso!"))
+      .catch(error => {
+        console.error("Erro na requisição:", error);
+        alert("Erro ao salvar os dados. Verifique a conexão.");
+      });
+    }
+  </script>
+
+</body>
+</html>
