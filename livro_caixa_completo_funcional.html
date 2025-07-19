@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Livro Caixa - Silfer's</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    input {
+      margin: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Livro Caixa</h1>
+
+  <div>
+    <input type="date" id="data">
+    <input type="text" id="codigo" placeholder="Código">
+    <input type="text" id="descricao" placeholder="Descrição">
+    <input type="number" id="credito" placeholder="Crédito">
+    <input type="number" id="debito" placeholder="Débito">
+    <button onclick="adicionarLancamento()">Lançar</button>
+    <button onclick="salvar()">Salvar</button>
+  </div>
+
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Data</th>
+        <th>Código</th>
+        <th>Descrição</th>
+        <th>Crédito</th>
+        <th>Débito</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxeaSHSS0o1AP1qFfc0ujOyXzWlGnY6EKc6MOr5IeZwTLzgpKRk9yKQnD-feEgfOW3Q/exec";
+
+    let lancamentos = [];
+
+    function adicionarLancamento() {
+      const data = document.getElementById("data").value;
+      const codigo = document.getElementById("codigo").value;
+      const descricao = document.getElementById("descricao").value;
+      const credito = document.getElementById("credito").value;
+      const debito = document.getElementById("debito").value;
+
+      const novo = { data, codigo, descricao, credito, debito };
+      lancamentos.push(novo);
+      atualizarTabela();
+
+      document.getElementById("data").value = "";
+      document.getElementById("codigo").value = "";
+      document.getElementById("descricao").value = "";
+      document.getElementById("credito").value = "";
+      document.getElementById("debito").value = "";
+    }
+
+    function remover(index) {
+      lancamentos.splice(index, 1);
+      atualizarTabela();
+    }
+
+    function atualizarTabela() {
+      const tbody = document.querySelector("#tabela tbody");
+      tbody.innerHTML = "";
+      lancamentos.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${item.data}</td>
+          <td>${item.codigo}</td>
+          <td>${item.descricao}</td>
+          <td>${item.credito || ""}</td>
+          <td>${item.debito || ""}</td>
+          <td><button onclick="remover(${index})">Remover</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function salvar() {
+      fetch(scriptURL, {
+        method: "POST",
+        body: JSON.stringify(lancamentos),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(response => response.text())
+      .then(res => {
+        alert("Dados salvos com sucesso!");
+      })
+      .catch(err => {
+        console.error("Erro ao salvar:", err);
+        alert("Erro ao salvar os dados. Verifique a conexão.");
+      });
+    }
+  </script>
+
+</body>
+</html>
