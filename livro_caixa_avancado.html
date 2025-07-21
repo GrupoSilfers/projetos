@@ -297,33 +297,29 @@
       document.getElementById("debito").disabled = false;
     }
 
-
-
     function lancar() {
-  const data = document.getElementById("data").value || new Date().toISOString().split('T')[0];
-  const codigo = document.getElementById("codigo").value;
-  const descricao = document.getElementById("descricao").value;
-  const credito = document.getElementById("credito").value.replace(',', '.');
-  const debito = document.getElementById("debito").value.replace(',', '.');
+      const data = document.getElementById("data").value || new Date().toISOString().split('T')[0];
+      const codigo = document.getElementById("codigo").value;
+      const descricao = document.getElementById("descricao").value;
+      const credito = document.getElementById("credito").value.replace(',', '.');
+      const debito = document.getElementById("debito").value.replace(',', '.');
 
-  if (!codigo) return;
+      if (!codigo) return;
 
-  const index = lancamentos.findIndex(l => String(l.codigo) === String(codigo));
-  const novo = { data, codigo, descricao, credito, debito };
+      const index = lancamentos.findIndex(l => String(l.codigo) === String(codigo));
+      const novo = { data, codigo, descricao, credito, debito };
 
-  if (index >= 0) {
-    lancamentos[index] = novo;
-    atualizarNaPlanilha(novo); // <- sincroniza com a planilha apenas o item editado
-  } else {
-    lancamentos.push(novo);
-  }
+      if (index >= 0) lancamentos[index] = novo;
+      else lancamentos.push(novo);
 
-  atualizarTabela();
-  salvar(); // salva no localStorage
-  limparFormulario();
-}
+      atualizarTabela();
+      salvar();
+      limparFormulario();
+    }
 
-
+    function salvar() {
+      localStorage.setItem("lancamentos", JSON.stringify(lancamentos));
+    }
 
     function fechar() {
       if (confirm("Deseja realmente limpar os dados não salvos?")) {
@@ -397,7 +393,8 @@
   </script>
 
 <script>
-
+let lancamentos = JSON.parse(localStorage.getItem('lancamentos')) || [];
+renderizarTabela();
 
 function salvarNaPlanilha(callback, mostrarMensagem = true) {
   if (!lancamentos || lancamentos.length === 0) {
@@ -417,7 +414,7 @@ function salvarNaPlanilha(callback, mostrarMensagem = true) {
     if (mostrarMensagem) alert("Dados salvos com sucesso na planilha.");
     localStorage.removeItem('lancamentos');
     lancamentos = [];
-    atualizarTabela();
+    renderizarTabela();
     if (callback) callback();
   })
   .catch((error) => {
@@ -429,19 +426,6 @@ function salvarNaPlanilha(callback, mostrarMensagem = true) {
 function salvar() {
   salvarNaPlanilha();
 }
-
-function atualizarNaPlanilha(lancamento) {
-  fetch("https://script.google.com/macros/s/AKfycbxeaSHSS0o1AP1qFfc0ujOyXzWlGnY6EKc6MOr5IeZwTLzgpKRk9yKQnD-feEgfOW3Q/exec", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(lancamento)
-  }).catch((error) => {
-    console.error("Erro ao atualizar na planilha:", error);
-  });
-}
-
 
 function voltar() {
   salvarNaPlanilha(() => {
@@ -459,7 +443,7 @@ function adicionarLancamento() {
   const lancamento = { data, codigo, descricao, credito, debito };
   lancamentos.push(lancamento);
   localStorage.setItem('lancamentos', JSON.stringify(lancamentos));
-  atualizarTabela();
+  renderizarTabela();
 
   document.getElementById("data").value = "";
   document.getElementById("codigo").value = "";
@@ -468,7 +452,7 @@ function adicionarLancamento() {
   document.getElementById("debito").value = "";
 }
 
-function atualizarTabela() {
+function renderizarTabela() {
   const corpo = document.getElementById("corpoTabela");
   if (!corpo) return;
   corpo.innerHTML = "";
