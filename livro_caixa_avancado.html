@@ -243,32 +243,36 @@
       return `${dia}/${mes}/${ano}`;
     }
 
-    function atualizarTabela() {
-      const tbody = document.querySelector("#tabela tbody");
-      tbody.innerHTML = "";
-      let totalCredito = 0, totalDebito = 0;
+    
+function atualizarTabela() {
+  const tbody = document.querySelector("#tabela tbody");
+  if (!tbody) return;
 
-      lancamentos.slice().reverse().forEach((item, index) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="item">${lancamentos.length - index}</td>
-          <td class="data">${item.data ? formatarData(item.data) : ''}</td>
-          <td class="codigo">${item.codigo}</td>
-          <td class="descricao">${item.descricao}</td>
-          <td class="credito">${item.credito && Number(item.credito) !== 0 ? formatarNumero(item.credito) : ""}</td>
-          <td class="debito">${item.debito && Number(item.debito) !== 0 ? formatarNumero(item.debito) : ""}</td>
-        `;
-        tr.onclick = () => preencherFormulario(item);
-        tbody.appendChild(tr);
+  tbody.innerHTML = "";
+  let totalCredito = 0, totalDebito = 0;
 
-        totalCredito += Number(item.credito || 0);
-        totalDebito += Number(item.debito || 0);
-      });
+  lancamentos.slice().reverse().forEach((item, index) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="item">${lancamentos.length - index}</td>
+      <td class="data">${item.data ? formatarData(item.data) : ''}</td>
+      <td class="codigo">${item.codigo}</td>
+      <td class="descricao">${item.descricao}</td>
+      <td class="credito">${item.credito && Number(item.credito) !== 0 ? formatarNumero(item.credito) : ""}</td>
+      <td class="debito">${item.debito && Number(item.debito) !== 0 ? formatarNumero(item.debito) : ""}</td>
+    `;
+    tr.onclick = () => preencherFormulario(item);
+    tbody.appendChild(tr);
 
-      document.getElementById("totalCredito").innerText = formatarNumero(totalCredito);
-      document.getElementById("totalDebito").innerText = formatarNumero(totalDebito);
-      document.getElementById("saldoFinal").innerText = formatarNumero(totalCredito - totalDebito);
-    }
+    totalCredito += Number(item.credito || 0);
+    totalDebito += Number(item.debito || 0);
+  });
+
+  document.getElementById("totalCredito").innerText = formatarNumero(totalCredito);
+  document.getElementById("totalDebito").innerText = formatarNumero(totalDebito);
+  document.getElementById("saldoFinal").innerText = formatarNumero(totalCredito - totalDebito);
+}
+
 
     function preencherFormulario(item) {
       document.getElementById("data").value = item.data;
@@ -297,29 +301,33 @@
       document.getElementById("debito").disabled = false;
     }
 
+
+
     function lancar() {
-      const data = document.getElementById("data").value || new Date().toISOString().split('T')[0];
-      const codigo = document.getElementById("codigo").value;
-      const descricao = document.getElementById("descricao").value;
-      const credito = document.getElementById("credito").value.replace(',', '.');
-      const debito = document.getElementById("debito").value.replace(',', '.');
+  const data = document.getElementById("data").value || new Date().toISOString().split('T')[0];
+  const codigo = document.getElementById("codigo").value;
+  const descricao = document.getElementById("descricao").value;
+  const credito = document.getElementById("credito").value.replace(',', '.');
+  const debito = document.getElementById("debito").value.replace(',', '.');
 
-      if (!codigo) return;
+  if (!codigo) return;
 
-      const index = lancamentos.findIndex(l => String(l.codigo) === String(codigo));
-      const novo = { data, codigo, descricao, credito, debito };
+  const index = lancamentos.findIndex(l => String(l.codigo) === String(codigo));
+  const novo = { data, codigo, descricao, credito, debito };
 
-      if (index >= 0) lancamentos[index] = novo;
-      else lancamentos.push(novo);
+  if (index >= 0) {
+    lancamentos[index] = novo;
+    atualizarNaPlanilha(novo); // <- sincroniza com a planilha apenas o item editado
+  } else {
+    lancamentos.push(novo);
+  }
 
-      atualizarTabela();
-      salvar();
-      limparFormulario();
-    }
+  atualizarTabela();
+  salvar(); // salva no localStorage
+  limparFormulario();
+}
 
-    function salvar() {
-      localStorage.setItem("lancamentos", JSON.stringify(lancamentos));
-    }
+
 
     function fechar() {
       if (confirm("Deseja realmente limpar os dados não salvos?")) {
@@ -381,20 +389,11 @@
       });
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-      atualizarTabela();
-      bloquearCampos();
-
-      const campoData = document.getElementById("data");
-      if (!campoData.value) {
-        campoData.value = new Date().toISOString().split('T')[0];
-      }
-    });
+    
   </script>
 
 <script>
-let lancamentos = JSON.parse(localStorage.getItem('lancamentos')) || [];
-renderizarTabela();
+
 
 function salvarNaPlanilha(callback, mostrarMensagem = true) {
   if (!lancamentos || lancamentos.length === 0) {
@@ -414,7 +413,7 @@ function salvarNaPlanilha(callback, mostrarMensagem = true) {
     if (mostrarMensagem) alert("Dados salvos com sucesso na planilha.");
     localStorage.removeItem('lancamentos');
     lancamentos = [];
-    renderizarTabela();
+    atualizarTabela();
     if (callback) callback();
   })
   .catch((error) => {
@@ -426,6 +425,19 @@ function salvarNaPlanilha(callback, mostrarMensagem = true) {
 function salvar() {
   salvarNaPlanilha();
 }
+
+function atualizarNaPlanilha(lancamento) {
+  fetch("https://script.google.com/macros/s/AKfycbxeaSHSS0o1AP1qFfc0ujOyXzWlGnY6EKc6MOr5IeZwTLzgpKRk9yKQnD-feEgfOW3Q/exec", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(lancamento)
+  }).catch((error) => {
+    console.error("Erro ao atualizar na planilha:", error);
+  });
+}
+
 
 function voltar() {
   salvarNaPlanilha(() => {
@@ -443,7 +455,7 @@ function adicionarLancamento() {
   const lancamento = { data, codigo, descricao, credito, debito };
   lancamentos.push(lancamento);
   localStorage.setItem('lancamentos', JSON.stringify(lancamentos));
-  renderizarTabela();
+  atualizarTabela();
 
   document.getElementById("data").value = "";
   document.getElementById("codigo").value = "";
@@ -452,7 +464,7 @@ function adicionarLancamento() {
   document.getElementById("debito").value = "";
 }
 
-function renderizarTabela() {
+function atualizarTabela() {
   const corpo = document.getElementById("corpoTabela");
   if (!corpo) return;
   corpo.innerHTML = "";
@@ -476,7 +488,8 @@ function renderizarTabela() {
 <script>
 async function carregarDadosDaPlanilha() {
   try {
-    const resposta = await fetch("https://script.google.com/macros/s/AKfycbxMJFdI5NZrfTyoB85YeF7CLC2PhFfIAagbrjyZjDOBWRSKbHFHLqxlRRJtTDt3T8S_/exec");
+    const resposta = await fetch("https://script.google.com/macros/s/AKfycbxMJFdI5NZrfTyoB85YeF7CLC2PhFfIAagbrjyZjDOBWRSKbHFHLqxlRRJtTDt3T8S_/exec")
+;
     if (!resposta.ok) throw new Error("Erro ao buscar dados da planilha.");
 
     const dados = await resposta.json();
@@ -491,9 +504,20 @@ async function carregarDadosDaPlanilha() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  carregarDadosDaPlanilha(); // Executa a leitura assim que o HTML é carregado
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await carregarDadosDaPlanilha();
+  bloquearCampos();
+
+  const campoData = document.getElementById("data");
+  if (!campoData.value) {
+    campoData.value = new Date().toISOString().split('T')[0];
+  }
+
+  atualizarTabela();
 });
+
 </script>
 
 </body>
