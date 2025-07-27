@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Planilha Google - Lançamentos</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    form input { margin: 5px; padding: 5px; }
+    button { padding: 6px 12px; }
+  </style>
+</head>
+<body>
+  <h1>Lançamentos Financeiros</h1>
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Data Salva</th><th>Data</th><th>Código</th><th>Descrição</th><th>Crédito</th><th>Débito</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Adicionar Novo Lançamento</h2>
+  <form id="formulario">
+    <input type="date" name="data" required>
+    <input type="text" name="codigo" placeholder="Código" required>
+    <input type="text" name="descricao" placeholder="Descrição" required>
+    <input type="number" name="credito" placeholder="Crédito">
+    <input type="number" name="debito" placeholder="Débito">
+    <button type="submit">Salvar</button>
+  </form>
+
+  <script>
+    const SHEET_ID = '1_YxNUhVHCHXAi6o20JVKXsrmWGVnuq7aN25n7rTI7x4';
+    const API_KEY = 'AIzaSyAXwxYHRIaFsO9imQomvwFqz_hkqzGdCr8';
+    const RANGE = 'Página1!A:F';
+
+    function carregarDados() {
+      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.querySelector('#tabela tbody');
+          tbody.innerHTML = '';
+          if (data.values && data.values.length > 1) {
+            data.values.slice(1).forEach(row => {
+              const tr = document.createElement('tr');
+              for (let i = 0; i < 6; i++) {
+                const td = document.createElement('td');
+                td.textContent = row[i] || '';
+                tr.appendChild(td);
+              }
+              tbody.appendChild(tr);
+            });
+          }
+        });
+    }
+
+    document.getElementById('formulario').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const novaLinha = [
+        new Date().toLocaleString('pt-BR'),
+        form.data.value,
+        form.codigo.value,
+        form.descricao.value,
+        form.credito.value || '',
+        form.debito.value || ''
+      ];
+
+      fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}:append?valueInputOption=USER_ENTERED&key=${API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: [novaLinha] })
+      })
+      .then(res => res.json())
+      .then(() => {
+        form.reset();
+        carregarDados();
+      });
+    });
+
+    window.onload = carregarDados;
+  </script>
+</body>
+</html>
