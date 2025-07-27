@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Lançamentos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Lançamentos Financeiros</h1>
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Data Salva</th><th>Data</th><th>Código</th><th>Descrição</th><th>Crédito</th><th>Débito</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Adicionar Novo Lançamento</h2>
+  <form id="formulario">
+    <input type="date" name="data" required>
+    <input type="text" name="codigo" placeholder="Código" required>
+    <input type="text" name="descricao" placeholder="Descrição" required>
+    <input type="number" name="credito" placeholder="Crédito">
+    <input type="number" name="debito" placeholder="Débito">
+    <button type="submit">Salvar</button>
+  </form>
+
+  <script src="script.js"></script>
+</body>
+</html>
